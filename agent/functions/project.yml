@@ -1,0 +1,44 @@
+parameters: {}
+environment: {}
+packages:
+    - name: gator
+      shared: false
+      environment: {}
+      parameters: {}
+      annotations: {}
+      functions:
+        - name: run_sql_query
+          binary: false
+          main: ""
+          runtime: python:3.11
+          web: true
+          webSecure: false
+          parameters: {}
+          environment:
+            DATABASE_URL: "${DATABASE_URL}"
+          annotations: {}
+          limits: {}
+        - name: web_search
+          binary: false
+          main: ""
+          runtime: python:3.11
+          web: true
+          webSecure: false
+          parameters: {}
+          environment:
+            BRAVE_API_KEY: "${BRAVE_API_KEY}"
+          annotations: {}
+          limits: {}
+        - name: airtable_leads
+          binary: false
+          main: ""
+          runtime: python:3.11
+          web: true
+          webSecure: false
+          parameters: {}
+          environment:
+            AIRTABLE_ACCESS_TOKEN: "${AIRTABLE_ACCESS_TOKEN}"
+            AIRTABLE_BASE_ID: "${AIRTABLE_BASE_ID}"
+            AIRTABLE_TABLE_ID: "${AIRTABLE_TABLE_ID}"
+          annotations: {}
+          limits: {}

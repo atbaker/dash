@@ -1,0 +1,41 @@
+@import "tailwindcss";
+@plugin "flowbite/plugin";
+@plugin "flowbite-typography";
+@source "../node_modules/flowbite-svelte";
+
+/* Flowbite dark mode configuration */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Ensure proper color definitions for dark mode */
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+}
+
+/* Ensure Flowbite Typography variables work in dark mode */
+.dark .format.format-invert {
+  --tw-format-body: rgb(156 163 175);
+  --tw-format-headings: rgb(255 255 255);
+  --tw-format-lead: rgb(209 213 219);
+  --tw-format-links: rgb(255 255 255);
+  --tw-format-bold: rgb(255 255 255);
+  --tw-format-counters: rgb(156 163 175);
+  --tw-format-bullets: rgb(107 114 128);
+  --tw-format-hr: rgb(55 65 81);
+  --tw-format-quotes: rgb(243 244 246);
+  --tw-format-quote-borders: rgb(55 65 81);
+  --tw-format-captions: rgb(156 163 175);
+  --tw-format-code: rgb(255 255 255);
+  --tw-format-pre-code: rgb(209 213 219);
+  --tw-format-pre-bg: rgb(31 41 55);
+  --tw-format-th-borders: rgb(55 65 81);
+  --tw-format-td-borders: rgb(75 85 99);
+}

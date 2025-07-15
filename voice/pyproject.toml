@@ -1,0 +1,14 @@
+[project]
+name = "dash-voice"
+version = "0.1.0"
+description = "Voice assistant for DASH"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.14",
+    "pipecat-ai-small-webrtc-prebuilt>=0.7.0",
+    "pipecat-ai[anthropic,cartesia,daily,deepgram,openai,silero,webrtc]>=0.0.73",
+    "python-dotenv>=1.1.1",
+    "requests>=2.32.4",
+    "uvicorn>=0.35.0",
+]

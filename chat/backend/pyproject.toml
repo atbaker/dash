@@ -1,0 +1,14 @@
+[project]
+name = "dash-chat-backend"
+version = "0.1.0"
+description = "FastAPI backend for DASH chat interface"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.14",
+    "openai>=1.93.0",
+    "python-dotenv>=1.1.1",
+    "uvicorn>=0.35.0",
+]
+
+[tool.uv]
+dev-dependencies = []
