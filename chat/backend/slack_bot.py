@@ -17,6 +17,23 @@ class SlackBot:
         self.bot_user_id: Optional[str] = None
         self.markdown_converter = SlackMarkdownConverter()
     
+    def _fix_slack_formatting(self, text: str) -> str:
+        """Fix common Slack formatting issues after markdown conversion."""
+        # Replace asterisk bullets with Slack-friendly bullets
+        lines = text.split('\n')
+        fixed_lines = []
+        
+        for line in lines:
+            # Check if line starts with * (bullet point)
+            if line.strip().startswith('* '):
+                # Replace with bullet character and proper indentation
+                fixed_line = line.replace('* ', '• ', 1)
+                fixed_lines.append(fixed_line)
+            else:
+                fixed_lines.append(line)
+        
+        return '\n'.join(fixed_lines)
+    
     async def initialize(self):
         """Initialize bot user ID for mention detection."""
         try:
@@ -102,6 +119,8 @@ class SlackBot:
         
         # Convert markdown to Slack mrkdwn
         slack_response = self.markdown_converter.convert(response)
+        # Fix any remaining formatting issues
+        slack_response = self._fix_slack_formatting(slack_response)
         
         # Send response as new message (not in thread)
         try:
@@ -135,6 +154,8 @@ class SlackBot:
         
         # Convert markdown to Slack mrkdwn
         slack_response = self.markdown_converter.convert(response)
+        # Fix any remaining formatting issues
+        slack_response = self._fix_slack_formatting(slack_response)
         
         # Send response
         try:

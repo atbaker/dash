@@ -1,47 +1,33 @@
 import os
 import requests
-from airtable_leads import create_airtable_lead
+from list_airtable_leads import list_airtable_leads
 
 
 def main(event, context):
     """
-    Create a new lead record in Airtable database.
+    List all lead records from Airtable database.
     
-    This is the DigitalOcean Functions adapter for the shared Airtable leads logic.
+    This is the DigitalOcean Functions adapter for listing Airtable leads.
     """
     try:
-        # Validate event structure
-        if not event:
+        # Extract optional parameters from event
+        max_records = event.get('max_records', 100) if event else 100
+        sort_field = event.get('sort_field', 'Created') if event else 'Created'
+        sort_direction = event.get('sort_direction', 'desc') if event else 'desc'
+        
+        # Validate max_records
+        if not isinstance(max_records, int) or max_records < 1:
             return {
                 'statusCode': 400,
-                'body': {'error': 'Event data is required'}
+                'body': {'error': 'max_records must be a positive integer'}
             }
         
-        # Extract parameters from event
-        customer = event.get('customer')
-        website = event.get('website') 
-        notes = event.get('notes')
+        # Cap max_records to prevent excessive data retrieval
+        if max_records > 1000:
+            max_records = 1000
         
-        if not customer:
-            return {
-                'statusCode': 400,
-                'body': {'error': 'Customer parameter is required'}
-            }
-            
-        if not website:
-            return {
-                'statusCode': 400,
-                'body': {'error': 'Website parameter is required'}
-            }
-            
-        if not notes:
-            return {
-                'statusCode': 400,
-                'body': {'error': 'Notes parameter is required'}
-            }
-        
-        # Execute Airtable creation using shared function
-        result = create_airtable_lead(customer, website, notes)
+        # Execute Airtable listing using shared function
+        result = list_airtable_leads(max_records, sort_field, sort_direction)
         
         # Return appropriate status code based on result
         if 'error' in result:

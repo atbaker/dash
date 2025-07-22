@@ -29,7 +29,20 @@ packages:
             BRAVE_API_KEY: "${BRAVE_API_KEY}"
           annotations: {}
           limits: {}
-        - name: airtable_leads
+        - name: add_airtable_lead
+          binary: false
+          main: ""
+          runtime: python:3.11
+          web: true
+          webSecure: false
+          parameters: {}
+          environment:
+            AIRTABLE_ACCESS_TOKEN: "${AIRTABLE_ACCESS_TOKEN}"
+            AIRTABLE_BASE_ID: "${AIRTABLE_BASE_ID}"
+            AIRTABLE_TABLE_ID: "${AIRTABLE_TABLE_ID}"
+          annotations: {}
+          limits: {}
+        - name: list_airtable_leads
           binary: false
           main: ""
           runtime: python:3.11

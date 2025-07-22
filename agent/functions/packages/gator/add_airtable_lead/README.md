@@ -1,4 +1,4 @@
-# Airtable Leads Function
+# Add Airtable Lead Function
 
 ## Function Instructions
 
@@ -102,7 +102,7 @@ Use for sales follow-up workflow: query recent Gator installs → research compa
 ## Testing
 
 ```bash
-cd functions/packages/gator/airtable_leads
+cd functions/packages/gator/add_airtable_lead
 export AIRTABLE_ACCESS_TOKEN='your_token_here'
 export AIRTABLE_BASE_ID='your_base_id_here'
 export AIRTABLE_TABLE_ID='your_table_id_here'

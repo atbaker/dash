@@ -3,7 +3,7 @@ import requests
 from pipecat.services.llm_service import FunctionCallParams
 
 
-async def airtable_leads(params: FunctionCallParams):
+async def add_airtable_lead(params: FunctionCallParams):
     """
     Create a new lead record in Airtable by calling DigitalOcean Function via HTTP.
     
@@ -36,7 +36,7 @@ async def airtable_leads(params: FunctionCallParams):
             return
         
         # Make HTTP request to DigitalOcean Function
-        function_url = f"{base_url}/airtable_leads"
+        function_url = f"{base_url}/add_airtable_lead"
         
         response = requests.post(
             function_url,

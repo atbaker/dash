@@ -28,7 +28,8 @@ from pipecat.transports.services.daily import DailyParams
 
 from functions.run_sql_query import run_sql_query
 from functions.web_search import web_search
-from functions.airtable_leads import airtable_leads
+from functions.add_airtable_lead import add_airtable_lead
+from functions.list_airtable_leads import list_airtable_leads
 
 load_dotenv(override=True)
 
@@ -77,7 +78,8 @@ async def run_example(transport: BaseTransport, _: argparse.Namespace, handle_si
     # sent to the same callback with an additional function_name parameter.
     llm.register_function("run_sql_query", run_sql_query)
     llm.register_function("web_search", web_search)
-    llm.register_function("airtable_leads", airtable_leads)
+    llm.register_function("add_airtable_lead", add_airtable_lead)
+    llm.register_function("list_airtable_leads", list_airtable_leads)
 
     @llm.event_handler("on_function_calls_started")
     async def on_function_calls_started(service, function_calls):
@@ -115,8 +117,8 @@ EXAMPLES:
         },
         required=["query"],
     )
-    airtable_leads_function = FunctionSchema(
-        name="airtable_leads",
+    add_airtable_lead_function = FunctionSchema(
+        name="add_airtable_lead",
         description="Create new lead record in Airtable database for promising Gator customers. Use after researching company with web search to qualify leads for sales follow-up.",
         properties={
             "customer": {
@@ -134,12 +136,26 @@ EXAMPLES:
         },
         required=["customer", "website", "notes"],
     )
-    tools = ToolsSchema(standard_tools=[sql_query_function, web_search_function, airtable_leads_function])
+    list_airtable_leads_function = FunctionSchema(
+        name="list_airtable_leads",
+        description="List all lead records from Airtable database to review sales pipeline",
+        input_schema=SchemaDefinition(
+            type="object",
+            properties={
+                "max_records": {"type": "integer", "description": "Maximum number of records to return (default 100, max 1000)"},
+                "sort_field": {"type": "string", "description": "Field to sort by (default 'Created')", "enum": ["Created", "Customer", "Website", "Last Modified"]},
+                "sort_direction": {"type": "string", "description": "Sort direction - 'asc' or 'desc' (default 'desc')", "enum": ["asc", "desc"]}
+            },
+            required=[]
+        )
+    )
+    
+    tools = ToolsSchema(standard_tools=[sql_query_function, web_search_function, add_airtable_lead_function, list_airtable_leads_function])
 
     messages = [
         {
             "role": "system",
-            "content": "You are a helpful AI assistant in a WebRTC call with access to business data, web search, and lead management capabilities. You can query a production database to answer questions about business metrics, customers, orders, and other data. You can also search the web for current information, news, and general knowledge. Additionally, you can create lead records in Airtable for promising Gator customers. Your output will be converted to audio so don't include special characters in your answers. When users ask about business data, use the run_sql_query function. When you need current information or topics not in the database, use the web_search function. When qualifying leads for sales follow-up, use the airtable_leads function to create records. Be concise and helpful in your responses.",
+            "content": "You are a helpful AI assistant in a WebRTC call with access to business data, web search, and lead management capabilities. You can query a production database to answer questions about business metrics, customers, orders, and other data. You can also search the web for current information, news, and general knowledge. Additionally, you can create lead records in Airtable for promising Gator customers and view all existing leads. Your output will be converted to audio so don't include special characters in your answers. When users ask about business data, use the run_sql_query function. When you need current information or topics not in the database, use the web_search function. When qualifying leads for sales follow-up, use the add_airtable_lead function to create records. Use list_airtable_leads to review all accumulated leads in the sales pipeline. Be concise and helpful in your responses.",
         }
     ]
     context = OpenAILLMContext(messages, tools)  # type: ignore
