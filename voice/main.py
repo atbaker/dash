@@ -138,16 +138,9 @@ EXAMPLES:
     )
     list_airtable_leads_function = FunctionSchema(
         name="list_airtable_leads",
-        description="List all lead records from Airtable database to review sales pipeline",
-        input_schema=SchemaDefinition(
-            type="object",
-            properties={
-                "max_records": {"type": "integer", "description": "Maximum number of records to return (default 100, max 1000)"},
-                "sort_field": {"type": "string", "description": "Field to sort by (default 'Created')", "enum": ["Created", "Customer", "Website", "Last Modified"]},
-                "sort_direction": {"type": "string", "description": "Sort direction - 'asc' or 'desc' (default 'desc')", "enum": ["asc", "desc"]}
-            },
-            required=[]
-        )
+        description="List the 10 most recent lead records from Airtable database to review sales pipeline",
+        properties={},
+        required=[]
     )
     
     tools = ToolsSchema(standard_tools=[sql_query_function, web_search_function, add_airtable_lead_function, list_airtable_leads_function])

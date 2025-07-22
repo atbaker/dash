@@ -5,29 +5,14 @@ from list_airtable_leads import list_airtable_leads
 
 def main(event, context):
     """
-    List all lead records from Airtable database.
+    List the 10 most recent lead records from Airtable database.
     
     This is the DigitalOcean Functions adapter for listing Airtable leads.
+    Returns a fixed set of the 10 most recent records sorted by Created date.
     """
     try:
-        # Extract optional parameters from event
-        max_records = event.get('max_records', 100) if event else 100
-        sort_field = event.get('sort_field', 'Created') if event else 'Created'
-        sort_direction = event.get('sort_direction', 'desc') if event else 'desc'
-        
-        # Validate max_records
-        if not isinstance(max_records, int) or max_records < 1:
-            return {
-                'statusCode': 400,
-                'body': {'error': 'max_records must be a positive integer'}
-            }
-        
-        # Cap max_records to prevent excessive data retrieval
-        if max_records > 1000:
-            max_records = 1000
-        
-        # Execute Airtable listing using shared function
-        result = list_airtable_leads(max_records, sort_field, sort_direction)
+        # Execute Airtable listing with fixed parameters for 10 most recent records
+        result = list_airtable_leads(max_records=10, sort_field='Created', sort_direction='desc')
         
         # Return appropriate status code based on result
         if 'error' in result:

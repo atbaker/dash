@@ -5,16 +5,12 @@ from pipecat.services.llm_service import FunctionCallParams
 
 async def list_airtable_leads(params: FunctionCallParams):
     """
-    List all lead records from Airtable by calling DigitalOcean Function via HTTP.
+    List the 10 most recent lead records from Airtable by calling DigitalOcean Function via HTTP.
     
     This is the HTTP wrapper for the DigitalOcean Functions implementation.
+    No parameters required - returns 10 most recent records.
     """
     try:
-        # Extract optional parameters from function call
-        max_records = params.arguments.get('max_records', 100)
-        sort_field = params.arguments.get('sort_field', 'Created')
-        sort_direction = params.arguments.get('sort_direction', 'desc')
-        
         # Get DigitalOcean Functions base URL
         base_url = os.environ.get('DO_FUNCTIONS_BASE_URL')
         
@@ -22,16 +18,12 @@ async def list_airtable_leads(params: FunctionCallParams):
             await params.result_callback({"error": "DO_FUNCTIONS_BASE_URL environment variable not configured"})
             return
         
-        # Make HTTP request to DigitalOcean Function
+        # Make HTTP request to DigitalOcean Function (no parameters needed)
         function_url = f"{base_url}/list_airtable_leads"
         
         response = requests.post(
             function_url,
-            json={
-                "max_records": max_records,
-                "sort_field": sort_field,
-                "sort_direction": sort_direction
-            },
+            json={},  # Empty payload since no parameters are needed
             timeout=30
         )
         

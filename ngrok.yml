@@ -1,0 +1,18 @@
+# Run with: ngrok start --config ~/.ngrok2/ngrok.yml,ngrok.yml --all
+
+version: 3
+agent:
+  # authtoken: "YOUR_NGROK_AUTHTOKEN" # Replace with your ngrok authtoken or specify multiple config files when running ngrok start
+
+endpoints:
+  - name: "backend"
+    description: "FastAPI backend for DASH"
+    url: "https://atbaker.ngrok.io"
+    upstream:
+      url: "http://localhost:8000"
+
+  - name: "frontend"
+    description: "SvelteKit frontend for DASH"
+    url: "https://gator.ngrok.io"
+    upstream:
+      url: "http://localhost:5173"

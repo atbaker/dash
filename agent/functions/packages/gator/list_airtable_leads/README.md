@@ -2,14 +2,11 @@
 
 ## Function Instructions
 
-Retrieve all lead records from Airtable database to review qualified leads and sales pipeline. Use at the end of lead qualification workflow to show all accumulated leads.
+Retrieve the 10 most recent lead records from Airtable database to review qualified leads and sales pipeline. Use at the end of lead qualification workflow to show all accumulated leads.
 
-PARAMETERS:
-- max_records: Maximum number of records to return (optional, default 100, max 1000)
-- sort_field: Field to sort by (optional, default 'Created')
-- sort_direction: Sort direction - 'asc' or 'desc' (optional, default 'desc' for most recent first)
+NO PARAMETERS REQUIRED - Returns a fixed set of the 10 most recent lead records sorted by creation date.
 
-Returns list of all lead records with Customer, Website, Notes, Created date, and Last Modified date.
+Returns list of lead records with Customer, Website, Notes, Created date, and Last Modified date.
 
 Use for sales review workflow: query recent installs → research companies → create leads → review all leads.
 
@@ -17,42 +14,7 @@ Use for sales review workflow: query recent installs → research companies → 
 
 ```json
 {
-  "parameters": [
-    {
-      "in": "query",
-      "name": "max_records",
-      "schema": {
-        "type": "integer",
-        "default": 100,
-        "minimum": 1,
-        "maximum": 1000
-      },
-      "required": false,
-      "description": "Maximum number of records to return"
-    },
-    {
-      "in": "query",
-      "name": "sort_field",
-      "schema": {
-        "type": "string",
-        "default": "Created",
-        "enum": ["Created", "Customer", "Website", "Last Modified"]
-      },
-      "required": false,
-      "description": "Field to sort records by"
-    },
-    {
-      "in": "query",
-      "name": "sort_direction",
-      "schema": {
-        "type": "string",
-        "default": "desc",
-        "enum": ["asc", "desc"]
-      },
-      "required": false,
-      "description": "Sort direction - ascending or descending"
-    }
-  ]
+  "parameters": []
 }
 ```
 

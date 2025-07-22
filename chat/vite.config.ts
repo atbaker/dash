@@ -9,5 +9,8 @@ export default defineConfig({
 		alias: {
 			'@': path.resolve(__dirname, './src')
 		}
+	},
+	server: {
+		allowedHosts: ['gator.ngrok.io', 'localhost', '127.0.0.1']
 	}
 });

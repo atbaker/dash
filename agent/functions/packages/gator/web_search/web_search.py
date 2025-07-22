@@ -1,6 +1,5 @@
 """
 Shared web search functionality using Brave Search API.
-Works with both Pipecat voice agent and DigitalOcean Functions.
 """
 import os
 import requests

@@ -76,7 +76,7 @@
 			bind:value={message}
 			oninput={handleInput}
 			onkeydown={handleKeyDown}
-			placeholder="Type your message..."
+			placeholder="Type here..."
 			disabled={isStreaming}
 			rows="1"
 			class="flex-1 resize-none border border-gray-300 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 transition-colors shadow-sm h-12 scrollbar-hide"
