@@ -5,14 +5,14 @@ from list_airtable_leads import list_airtable_leads
 
 def main(event, context):
     """
-    List the 10 most recent lead records from Airtable database.
+    List the 50 most recent lead records from Airtable database.
     
     This is the DigitalOcean Functions adapter for listing Airtable leads.
-    Returns a fixed set of the 10 most recent records sorted by Created date.
+    Returns a fixed set of the 50 most recent records sorted by Created date.
     """
     try:
-        # Execute Airtable listing with fixed parameters for 10 most recent records
-        result = list_airtable_leads(max_records=10, sort_field='Created', sort_direction='desc')
+        # Execute Airtable listing with fixed parameters for 50 most recent records
+        result = list_airtable_leads(max_records=50, sort_field='Created', sort_direction='desc')
         
         # Return appropriate status code based on result
         if 'error' in result:

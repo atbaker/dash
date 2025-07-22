@@ -2,9 +2,9 @@
 
 ## Function Instructions
 
-Retrieve the 10 most recent lead records from Airtable database to review qualified leads and sales pipeline. Use at the end of lead qualification workflow to show all accumulated leads.
+Retrieve the 50 most recent lead records from Airtable database to review qualified leads and sales pipeline. Use at the end of lead qualification workflow to show all accumulated leads.
 
-NO PARAMETERS REQUIRED - Returns a fixed set of the 10 most recent lead records sorted by creation date.
+NO PARAMETERS REQUIRED - Returns a fixed set of the 50 most recent lead records sorted by creation date.
 
 Returns list of lead records with Customer, Website, Notes, Created date, and Last Modified date.
 

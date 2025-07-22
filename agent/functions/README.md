@@ -11,7 +11,7 @@ You have access to five key tools:
 1. `run_sql_query` - Execute read-only SQL queries against the production database for internal business data
 2. `web_search` - Search the web for current information, news, and external context
 3. `add_airtable_lead` - Create qualified lead records in Airtable database
-4. `list_airtable_leads` - Retrieve all lead records from Airtable to review sales pipeline
+4. `list_airtable_leads` - Retrieve the 50 most recent lead records from Airtable to review sales pipeline
 5. `get_latest_workspaces` - Get the 10 most recent workspace installations for demo purposes
 
 Use these tools to answer questions about:
@@ -46,7 +46,7 @@ Remember you're speaking to business executives who want clear insights and stra
 - **run_sql_query**: Query production database for business metrics
 - **web_search**: Search the web for external context and market research
 - **add_airtable_lead**: Create qualified lead records in Airtable database
-- **list_airtable_leads**: Retrieve all lead records from Airtable database
+- **list_airtable_leads**: Retrieve the 50 most recent lead records from Airtable database
 - **get_latest_workspaces**: Get the 10 most recent workspace installations (demo-optimized)
 
 ## Deployment

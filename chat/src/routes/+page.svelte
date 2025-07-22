@@ -17,7 +17,7 @@
 				chatStore.addMessage({
 					id: crypto.randomUUID(),
 					role: 'assistant',
-					content: 'Hello! I\'m DASH, your AI assistant. I can help you with business data and web searches. What would you like to know?',
+					content: 'Hello! I\'m DASH, your AI business intelligence assistant for Gator. I can help you Gator\'s usage data, research new users, and qualify promising customers as leads. Try asking about recent workspace installs, user growth metrics, or industry insights to get started!',
 					timestamp: new Date()
 				});
 			}

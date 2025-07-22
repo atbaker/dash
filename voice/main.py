@@ -140,7 +140,7 @@ EXAMPLES:
     )
     list_airtable_leads_function = FunctionSchema(
         name="list_airtable_leads",
-        description="List the 10 most recent lead records from Airtable database to review sales pipeline",
+        description="List the 50 most recent lead records from Airtable database to review sales pipeline",
         properties={},
         required=[]
     )

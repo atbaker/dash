@@ -5,10 +5,10 @@ from pipecat.services.llm_service import FunctionCallParams
 
 async def list_airtable_leads(params: FunctionCallParams):
     """
-    List the 10 most recent lead records from Airtable by calling DigitalOcean Function via HTTP.
+    List the 50 most recent lead records from Airtable by calling DigitalOcean Function via HTTP.
     
     This is the HTTP wrapper for the DigitalOcean Functions implementation.
-    No parameters required - returns 10 most recent records.
+    No parameters required - returns 50 most recent records.
     """
     try:
         # Get DigitalOcean Functions base URL

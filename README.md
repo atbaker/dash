@@ -1,5 +1,7 @@
 # DASH - Executive AI Agent Platform
 
+![DASH Platform](./dash.png)
+
 An Executive AI agent platform built on DigitalOcean's GenAI Platform. DASH provides multiple interfaces for business intelligence assistance with access to production database queries, web search capabilities, and Airtable lead management.
 
 ## Features
