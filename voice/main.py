@@ -30,6 +30,7 @@ from functions.run_sql_query import run_sql_query
 from functions.web_search import web_search
 from functions.add_airtable_lead import add_airtable_lead
 from functions.list_airtable_leads import list_airtable_leads
+from functions.get_latest_workspaces import get_latest_workspaces
 
 load_dotenv(override=True)
 
@@ -80,6 +81,7 @@ async def run_example(transport: BaseTransport, _: argparse.Namespace, handle_si
     llm.register_function("web_search", web_search)
     llm.register_function("add_airtable_lead", add_airtable_lead)
     llm.register_function("list_airtable_leads", list_airtable_leads)
+    llm.register_function("get_latest_workspaces", get_latest_workspaces)
 
     @llm.event_handler("on_function_calls_started")
     async def on_function_calls_started(service, function_calls):
@@ -142,13 +144,19 @@ EXAMPLES:
         properties={},
         required=[]
     )
+    get_latest_workspaces_function = FunctionSchema(
+        name="get_latest_workspaces",
+        description="Get the 10 most recent workspace installations for demo purposes. Use this instead of run_sql_query when you specifically need to show recent workspace installations, as it provides reliable demo-ready data without SQL generation risks.",
+        properties={},
+        required=[]
+    )
     
-    tools = ToolsSchema(standard_tools=[sql_query_function, web_search_function, add_airtable_lead_function, list_airtable_leads_function])
+    tools = ToolsSchema(standard_tools=[sql_query_function, web_search_function, add_airtable_lead_function, list_airtable_leads_function, get_latest_workspaces_function])
 
     messages = [
         {
             "role": "system",
-            "content": "You are a helpful AI assistant in a WebRTC call with access to business data, web search, and lead management capabilities. You can query a production database to answer questions about business metrics, customers, orders, and other data. You can also search the web for current information, news, and general knowledge. Additionally, you can create lead records in Airtable for promising Gator customers and view all existing leads. Your output will be converted to audio so don't include special characters in your answers. When users ask about business data, use the run_sql_query function. When you need current information or topics not in the database, use the web_search function. When qualifying leads for sales follow-up, use the add_airtable_lead function to create records. Use list_airtable_leads to review all accumulated leads in the sales pipeline. Be concise and helpful in your responses.",
+            "content": "You are an AI business intelligence assistant for Gator, a Slack app that adds smart scheduled delivery to Slack messages. Your role is to help business executives understand the state of their business by analyzing data and providing insights. You have access to five key tools: run_sql_query for production database queries, web_search for external information, add_airtable_lead for creating qualified lead records, list_airtable_leads for reviewing sales pipeline, and get_latest_workspaces for demo-ready workspace data. Use these tools to answer questions about revenue metrics, customer usage patterns, user growth, feature adoption, business KPIs, market research, and lead qualification. When users ask questions: determine if you need internal data, external information, lead creation, or lead review; execute appropriate queries to gather relevant information; analyze results to provide clear, actionable insights; present findings in a business-friendly format with key takeaways; create qualified lead entries for promising customers; use list_airtable_leads at the end of lead qualification workflows. Use get_latest_workspaces instead of run_sql_query when you specifically need recent workspace installations for reliable demo data. Always provide specific numbers and data-driven insights. Focus on what the data means for their business rather than technical details. Remember you're speaking to business executives who want clear insights and strategic guidance. IMPORTANT: Your output will be converted to audio, so never use markdown formatting like asterisks, hashtags, backticks, or other special characters. Use plain text only. Present lists with simple words like first, second, next, or also. Keep responses conversational and concise for voice delivery.",
         }
     ]
     context = OpenAILLMContext(messages, tools)  # type: ignore
