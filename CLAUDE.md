@@ -21,19 +21,28 @@ dash/
 │   ├── vite.config.ts        # Vite build configuration
 │   └── tailwind.config.js    # Tailwind CSS configuration
 └── agent/                    # DigitalOcean Functions
-    └── functions/
-        ├── project.yml      # Function deployment config
-        └── packages/gator/  # Self-contained function implementations
-            ├── run_sql_query/    # SQL query DO Function
-            │   ├── __main__.py   # Function entry point
-            │   ├── db_utils.py   # Database utilities
-            │   └── sql_utils.py  # SQL validation
-            ├── web_search/       # Web search DO Function
-            │   ├── __main__.py   # Function entry point
-            │   └── web_search.py # Web search logic
-            └── airtable_leads/   # Airtable leads DO Function
-                ├── __main__.py   # Function entry point
-                └── airtable_leads.py # Airtable logic
+    ├── functions/
+    │   ├── project.yml      # Function deployment config
+    │   └── packages/gator/  # Self-contained function implementations
+    │       ├── run_sql_query/    # SQL query DO Function
+    │       │   ├── __main__.py   # Function entry point
+    │       │   ├── db_utils.py   # Database utilities
+    │       │   ├── sql_utils.py  # SQL validation
+    │       │   └── gator_sample.db # Sample SQLite database
+    │       ├── web_search/       # Web search DO Function
+    │       │   ├── __main__.py   # Function entry point
+    │       │   └── web_search.py # Web search logic
+    │       ├── add_airtable_lead/ # Create Airtable leads
+    │       │   ├── __main__.py   # Function entry point
+    │       │   └── add_airtable_lead.py # Airtable logic
+    │       ├── list_airtable_leads/ # List Airtable leads
+    │       └── get_latest_workspaces/ # Get recent workspaces
+    └── knowledge_base/       # Sample data and documents
+        ├── sample_pnl_2020.csv  # Sample P&L data
+        ├── sample_pnl_2021.csv
+        ├── sample_pnl_2022.csv
+        ├── sample_pnl_2023.csv
+        └── sample_pnl_2024.csv
 ```
 
 ## Technologies Used
@@ -105,9 +114,11 @@ Chat backend streams responses as JSON lines rather than SSE:
 
 ### 4. Function Registration Pattern
 Both chat and Slack interfaces use the same DigitalOcean Functions:
-- `run_sql_query` - Database queries for business intelligence
+- `run_sql_query` - Database queries for business intelligence (supports sample data mode)
 - `web_search` - External information and current events
-- `airtable_leads` - Create qualified lead records in Airtable
+- `add_airtable_lead` - Create qualified lead records in Airtable
+- `list_airtable_leads` - Retrieve recent leads from Airtable
+- `get_latest_workspaces` - Get recent workspace installations (demo-optimized)
 
 ### 5. Component-Based UI
 Modular Svelte components with clear separation:
@@ -157,16 +168,40 @@ VITE_API_BASE_URL=http://localhost:8000
 
 ### Functions (`agent/functions/.env`)
 ```env
+# Database: Use production PostgreSQL or sample data mode
 DATABASE_URL=postgresql://user:password@host:port/dbname?sslmode=require
+# DATABASE_URL=use-gator-sample-data  # For testing with SQLite sample data
+
+# External APIs
 BRAVE_API_KEY=your_brave_api_key
 AIRTABLE_ACCESS_TOKEN=your_airtable_token
 AIRTABLE_BASE_ID=your_airtable_base_id
 AIRTABLE_TABLE_ID=your_airtable_table_id
+
+# Function communication
+DO_FUNCTIONS_BASE_URL=https://faas-xxx.doserverless.co/api/v1/web/fn-xxx/gator
 ```
 
 ## AI Agent Capabilities
 
 The DASH AI assistant can help with:
+
+## Sample Data Mode
+
+For development and testing, DASH includes sample data that works without external dependencies:
+
+- **Sample Database**: When `DATABASE_URL=use-gator-sample-data` is set, functions use an anonymized SQLite database (`gator_sample.db`) with realistic workspace and user data
+- **Sample P&L Data**: The knowledge base includes 5 years of sample Profit & Loss statements (2020-2024) showing realistic SaaS business growth patterns
+- **Demo Workspaces**: Sample data includes 82 fictional companies with realistic names and domains for demonstration purposes
+
+This allows developers to:
+- Test all functionality without setting up a production database
+- Demonstrate capabilities using realistic but anonymized data
+- Develop and debug locally without external API dependencies
+
+## AI Assistant Capabilities
+
+With sample or production data, the DASH AI assistant can help with:
 
 ### Business Intelligence
 - **Revenue metrics** and financial performance
@@ -248,6 +283,7 @@ def create_airtable_lead(customer: str, website: str, notes: str) -> Dict[str, A
 - All queries are validated before execution
 - Results are automatically serialized to JSON-compatible formats
 - Connection timeouts and row limits are enforced
+- Sample data mode uses SQLite for local development without external dependencies
 
 ### Streaming Implementation
 - Chat uses native `fetch()` with `ReadableStream` processing
@@ -268,9 +304,11 @@ def create_airtable_lead(customer: str, website: str, notes: str) -> Dict[str, A
 
 
 ### DigitalOcean Functions
-- `run_sql_query` - Execute database queries
-- `web_search` - Search the web for information  
-- `airtable_leads` - Create new lead records in Airtable database
+- `run_sql_query` - Execute database queries (production or sample data)
+- `web_search` - Search the web for information
+- `add_airtable_lead` - Create new lead records in Airtable database
+- `list_airtable_leads` - Retrieve recent leads from Airtable for pipeline review
+- `get_latest_workspaces` - Get recent workspace installations (demo-optimized)
 
 ## Deployment
 

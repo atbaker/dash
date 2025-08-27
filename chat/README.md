@@ -1,11 +1,12 @@
 # DASH Chat - Svelte Edition
 
-A modern, reactive chat interface for DASH powered by DigitalOcean's GenAI Platform Agent, built with SvelteKit and Tailwind CSS.
+A modern, reactive chat interface for DASH powered by DigitalOcean's GenAI Platform Agent, built with SvelteKit and Tailwind CSS. Includes optional Slack bot integration for team collaboration.
 
 ## Features
 
 - **Real-time streaming chat** using native fetch() and ReadableStream
 - **Reactive UI** with Svelte 5 and automatic state management
+- **Slack bot integration** with threaded conversations and context
 - **Modern design** with Tailwind CSS 4.0
 - **TypeScript support** for better development experience
 - **Static site generation** for DigitalOcean App Platform deployment
@@ -21,11 +22,37 @@ A modern, reactive chat interface for DASH powered by DigitalOcean's GenAI Platf
 
 ## Quick Start
 
-### Prerequisites
+Choose your preferred development approach:
 
-- Node.js 18+ 
-- Python 3.11+
-- uv (for Python dependency management)
+### Option 1: Docker (Recommended - Zero Setup)
+
+**Prerequisites:** Docker and Docker Compose
+
+```bash
+# Clone and navigate to chat directory
+cd chat
+
+# Copy environment variables
+cp backend/.env.example backend/.env
+# Edit backend/.env with your DigitalOcean Agent credentials
+
+# Start both frontend and backend with hot reload
+docker compose up
+
+# Open browser to:
+# - Frontend: http://localhost:5173 (Vite dev server)
+# - Backend API: http://localhost:8000 (FastAPI server)
+```
+
+The Docker setup provides:
+- ✅ No need to install Node.js, Python, or uv
+- ✅ Automatic dependency management
+- ✅ Hot reload for both frontend and backend
+- ✅ Consistent environment across machines
+
+### Option 2: Local Development
+
+**Prerequisites:** Node.js 18+, Python 3.11+, uv
 
 ### Frontend Setup
 
@@ -51,6 +78,7 @@ uv sync
 # Copy environment variables
 cp .env.example .env
 # Edit .env with your DigitalOcean Agent credentials
+# Optionally add Slack credentials for bot integration
 
 # Start backend server
 uv run python main.py
@@ -70,12 +98,16 @@ VITE_API_BASE_URL=http://localhost:8000
 DO_AGENT_ENDPOINT=https://your-agent-endpoint
 DO_AGENT_ACCESS_KEY=your-access-key
 DEBUG=true
+
+# Optional: Slack integration
+SLACK_BOT_TOKEN=xoxb-your-bot-token
+SLACK_SIGNING_SECRET=your-signing-secret
 ```
 
 ## Project Structure
 
 ```
-chat-svelte/
+chat/
 ├── src/
 │   ├── routes/
 │   │   └── +page.svelte          # Main chat interface
@@ -83,7 +115,9 @@ chat-svelte/
 │   │   ├── components/
 │   │   │   ├── ChatMessage.svelte # Individual message component
 │   │   │   ├── MessageList.svelte # Scrolling message container
-│   │   │   └── ChatInput.svelte   # Input form with streaming
+│   │   │   ├── ChatInput.svelte   # Input form with streaming
+│   │   │   ├── NewConversationButton.svelte # Clear conversation
+│   │   │   └── ThemeToggle.svelte # Dark/light mode toggle
 │   │   ├── stores/
 │   │   │   └── chat.ts           # Svelte stores for state
 │   │   └── api/
@@ -91,34 +125,78 @@ chat-svelte/
 │   ├── app.html                  # HTML template
 │   └── app.css                   # Global styles with Tailwind
 ├── backend/
-│   ├── main.py                   # FastAPI application
+│   ├── main.py                   # FastAPI application with Slack endpoints
+│   ├── slack_bot.py              # Slack integration logic
+│   ├── chat_service.py           # Shared DigitalOcean Agent communication
+│   ├── slack_manifest.yml        # Slack app configuration
 │   ├── pyproject.toml           # Python dependencies
-│   └── .env.example             # Environment variables
+│   ├── .env.example             # Environment variables
+│   └── README_SLACK.md          # Slack setup instructions
 ├── static/                       # Static assets
 ├── svelte.config.js             # SvelteKit configuration
+├── tailwind.config.js           # Tailwind CSS configuration
 └── package.json                 # Node.js dependencies
 ```
 
 ## Development
 
-### Frontend Development
+### Docker Development Commands
+
+```bash
+# Start development environment
+docker compose up
+
+# Start in background
+docker compose up -d
+
+# Stop services
+docker compose down
+
+# Rebuild after changes to Dockerfile
+docker compose up --build
+
+# View logs
+docker compose logs -f frontend
+docker compose logs -f backend
+
+# Production-like single container
+docker compose --profile production up app
+```
+
+### Local Development Commands
+
+#### Frontend Development
 ```bash
 npm run dev          # Start dev server with HMR
 npm run build        # Build for production
 npm run preview      # Preview production build
 ```
 
-### Backend Development
+#### Backend Development
 ```bash
 cd backend
 uv run python main.py    # Start FastAPI server with reload
+# Backend includes both chat API and Slack webhook endpoints
 ```
 
-### Type Checking
+#### Type Checking
 ```bash
 npm run check        # Run svelte-check for TypeScript
 npm run check:watch  # Watch mode for type checking
 ```
+
+## Docker vs Local Development
+
+| Feature | Docker | Local |
+|---------|--------|-------|
+| Setup Time | < 5 minutes | 10-15 minutes |
+| Prerequisites | Docker only | Node.js, Python, uv |
+| Hot Reload | ✅ Both frontend & backend | ✅ Both frontend & backend |
+| Environment | Consistent across machines | System dependent |
+| Resource Usage | Higher (containers) | Lower (native) |
+| Debugging | Container logs | Direct terminal access |
+
+Choose Docker for quick setup and consistent environments. Choose local for faster iteration and direct debugging.
 
 ## Deployment to DigitalOcean App Platform
 
@@ -189,13 +267,14 @@ const reader = response.body.getReader();
 
 ## API Endpoints
 
-### POST /api/chat/stream
-Streams chat responses as JSON lines:
+### Chat API
+
+**POST /api/chat/stream** - Streams chat responses as JSON lines:
 
 ```bash
 curl -X POST http://localhost:8000/api/chat/stream \
   -H "Content-Type: application/json" \
-  -d '{"message": "Hello!"}'
+  -d '{"message": "Hello!", "history": []}'
 ```
 
 Response format:
@@ -205,33 +284,41 @@ Response format:
 {"complete": true}
 ```
 
-### GET /health
-Health check endpoint:
+### Slack API
+
+**POST /slack/events** - Webhook for Slack events (requires proper signing)
+
+### Health Check
+
+**GET /health** - System status:
 
 ```json
 {
   "status": "healthy",
-  "config": {
-    "has_endpoint": true
-  }
+  "config": {"has_endpoint": true},
+  "slack_enabled": true
 }
 ```
 
-## Key Advantages Over HTMX Version
+## Slack Bot Integration
 
-1. **Cleaner Streaming**: Native fetch() instead of SSE complexity
-2. **Reactive Updates**: Automatic UI updates without manual DOM manipulation
-3. **Better State Management**: Centralized state with Svelte stores
-4. **Component Reusability**: Modular, testable components
-5. **Modern Development**: Hot reload, TypeScript, modern build tools
-6. **Easier Maintenance**: Clear separation of concerns
+The backend includes a Slack bot that provides the same AI capabilities through Slack:
+
+- **Direct Messages**: Users can DM the bot directly
+- **Channel Mentions**: Use `@DASH AI` in channels
+- **Threaded Conversations**: Maintains context in threads
+- **Full History**: Retrieves conversation history from Slack
+
+For setup instructions, see [backend/README_SLACK.md](backend/README_SLACK.md).
 
 ## Sample Chat Capabilities
 
 The AI assistant can help with:
 - **Business data queries** - Ask about workspaces, users, database info
 - **Web search** - Search for latest information and news
-- **Lead management** - Create qualified lead entries in Airtable
+- **Lead management** - Create and review qualified lead entries in Airtable
+- **Recent workspace analysis** - Review latest customer installations
+- **P&L data analysis** - Analyze financial performance using sample data
 
 ## Contributing
 
