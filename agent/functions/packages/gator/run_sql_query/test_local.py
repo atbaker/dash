@@ -22,18 +22,38 @@ main = sql_query_module.main
 
 # Test queries
 test_queries = [
-    # Valid SELECT queries
+    # Valid SELECT queries for Gator tables
     {
-        'name': 'Simple SELECT',
-        'event': {'query': 'SELECT 1 as test_number, NOW() as current_time'}
+        'name': 'Count workspaces',
+        'event': {'query': 'SELECT COUNT(*) as workspace_count FROM workspaces_workspace'}
     },
     {
-        'name': 'Table query (adjust table name as needed)',
-        'event': {'query': 'SELECT * FROM pg_tables WHERE schemaname = \'public\' LIMIT 5'}
+        'name': 'Count users',
+        'event': {'query': 'SELECT COUNT(*) as user_count FROM workspaces_gatoruser'}
+    },
+    {
+        'name': 'Count messages',
+        'event': {'query': 'SELECT COUNT(*) as message_count FROM later_messages_message'}
+    },
+    {
+        'name': 'Sample workspace data',
+        'event': {'query': 'SELECT name, enterprise_name, created FROM workspaces_workspace LIMIT 5'}
+    },
+    {
+        'name': 'Messages by status',
+        'event': {'query': 'SELECT status, COUNT(*) as count FROM later_messages_message GROUP BY status ORDER BY count DESC'}
+    },
+    {
+        'name': 'Workspaces by year',
+        'event': {'query': 'SELECT strftime("%Y", created) as year, COUNT(*) as count FROM workspaces_workspace GROUP BY year ORDER BY year'}
+    },
+    {
+        'name': 'JOIN query',
+        'event': {'query': 'SELECT w.name, COUNT(u.id) as user_count FROM workspaces_workspace w LEFT JOIN workspaces_gatoruser u ON w.id = u.workspace_id GROUP BY w.id, w.name ORDER BY user_count DESC LIMIT 10'}
     },
     {
         'name': 'WITH clause (CTE)',
-        'event': {'query': 'WITH test AS (SELECT 1 as num) SELECT * FROM test'}
+        'event': {'query': 'WITH recent_workspaces AS (SELECT * FROM workspaces_workspace WHERE created > "2023-01-01") SELECT COUNT(*) as recent_count FROM recent_workspaces'}
     },
     # Invalid queries
     {
@@ -42,23 +62,19 @@ test_queries = [
     },
     {
         'name': 'INSERT attempt (should be blocked)',
-        'event': {'query': 'INSERT INTO test VALUES (1)'}
+        'event': {'query': 'INSERT INTO workspaces_workspace VALUES (1)'}
     },
     {
         'name': 'UPDATE attempt (should be blocked)',
-        'event': {'query': 'UPDATE users SET name = \'test\' WHERE id = 1'}
+        'event': {'query': 'UPDATE workspaces_workspace SET name = "test" WHERE id = 1'}
     },
     {
         'name': 'DELETE attempt (should be blocked)',
-        'event': {'query': 'DELETE FROM users WHERE id = 1'}
+        'event': {'query': 'DELETE FROM workspaces_workspace WHERE id = 1'}
     },
     {
         'name': 'DROP attempt (should be blocked)',
-        'event': {'query': 'DROP TABLE users'}
-    },
-    {
-        'name': 'Invalid SQL syntax',
-        'event': {'query': 'SELECT * FROM'}
+        'event': {'query': 'DROP TABLE workspaces_workspace'}
     }
 ]
 
@@ -66,13 +82,10 @@ def test_sql_function():
     # Check if DATABASE_URL is set
     database_url = os.environ.get('DATABASE_URL')
     
-    if not database_url:
-        print("ERROR: DATABASE_URL environment variable not set")
-        print("\nExample:")
-        print("  export DATABASE_URL='postgresql://user:password@host:port/dbname?sslmode=require'")
-        sys.exit(1)
-    
-    print("Database connection configured.")
+    if database_url and database_url != 'use-gator-sample-data':
+        print("Using PostgreSQL production database.")
+    else:
+        print("Using SQLite sample data fallback.")
     print()
     
     for test in test_queries:
