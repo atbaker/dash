@@ -2,12 +2,12 @@
 
 ![DASH Platform](./dash.png)
 
-An Executive AI agent platform built on DigitalOcean's GenAI Platform. DASH provides multiple interfaces for business intelligence assistance with access to production database queries, web search capabilities, and Airtable lead management.
+An Executive AI agent platform built on DigitalOcean's GenAI Platform. DASH provides chat and Slack bot interfaces for business intelligence assistance with access to production database queries, web search capabilities, and Airtable lead management.
 
 ## Features
 
 - **Chat Interface**: SvelteKit-based web chat with streaming responses
-- **Voice Assistant**: Pipecat-powered voice conversations with WebRTC
+- **Slack Bot**: Native Slack integration with event handling
 - **SQL Query Tool**: Read-only database queries for business intelligence
 - **Web Search Tool**: Real-time web and news search via Brave Search API
 - **Airtable Leads**: Create and manage qualified customer leads
@@ -17,8 +17,8 @@ An Executive AI agent platform built on DigitalOcean's GenAI Platform. DASH prov
 
 The platform uses an HTTP-based architecture where:
 - **DigitalOcean Functions** contain all business logic and tools
-- **Voice Agent** makes HTTP calls to DigitalOcean Functions
 - **Chat Interface** streams responses from FastAPI backend
+- **Slack Bot** receives events and responds via Slack API
 - **Self-contained Functions** each contain their own business logic
 
 ## Quick Start
@@ -43,13 +43,6 @@ uv sync
 uv run python main.py
 ```
 
-### 3. Start Voice Assistant
-```bash
-cd voice
-uv sync
-# Set up .env file with API keys and DO Functions URL
-uv run python main.py
-```
 
 ## Project Structure
 
@@ -61,12 +54,9 @@ dash/
 │           ├── run_sql_query/     # Database query function
 │           ├── web_search/        # Web search function
 │           └── airtable_leads/    # Airtable lead creation
-├── chat/                     # SvelteKit chat interface
-│   ├── backend/             # FastAPI backend
+├── chat/                     # SvelteKit chat interface + Slack bot
+│   ├── backend/             # FastAPI backend with Slack integration
 │   └── src/                 # Svelte frontend
-├── voice/                   # Pipecat voice assistant
-│   ├── functions/           # HTTP wrappers for DO Functions
-│   └── main.py             # Voice pipeline
 └── README.md               # This file
 ```
 
@@ -95,11 +85,8 @@ DO_AGENT_ENDPOINT=https://your-agent-endpoint
 DO_AGENT_ACCESS_KEY=your-access-key
 ```
 
-### Voice Assistant (`voice/.env`)
+### Slack Bot (optional - for Slack integration)
 ```env
-DEEPGRAM_API_KEY=your_deepgram_key
-CARTESIA_API_KEY=your_cartesia_key
-CARTESIA_VOICE_ID=your_voice_id
-DO_MODEL_ACCESS_KEY=your_do_model_key
-DO_FUNCTIONS_BASE_URL=https://faas-xxx.doserverless.co/api/v1/web/fn-xxx/gator
+SLACK_BOT_TOKEN=xoxb-your-bot-token
+SLACK_SIGNING_SECRET=your-signing-secret
 ```

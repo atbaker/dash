@@ -1,0 +1,14 @@
+Category,Type,Amount
+Sales,Revenue,35000.00
+Software & Subscriptions,Operating Expense,4200.00
+Professional Services,Operating Expense,2800.00
+Insurance,Operating Expense,650.00
+Advertising & Marketing,Operating Expense,1500.00
+Office & Equipment,Operating Expense,1200.00
+Internet & Communications,Operating Expense,840.00
+Business Licenses & Fees,Operating Expense,450.00
+Miscellaneous,Operating Expense,380.00
+Refunds & Credits,Other Income,125.00
+Total Operating Expenses,Calculated,12020.00
+Operating Income,Calculated,22980.00
+Net Income,Calculated,23105.00

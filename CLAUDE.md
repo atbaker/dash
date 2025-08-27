@@ -2,14 +2,14 @@
 
 ## Project Overview
 
-DASH is an Executive AI agent platform built on DigitalOcean's GenAI Platform. It provides multiple interfaces for business intelligence assistance with access to production database queries, web search capabilities, and Airtable lead management. The project consists of three main components: chat interface, voice assistant, and serverless functions.
+DASH is an Executive AI agent platform built on DigitalOcean's GenAI Platform. It provides multiple interfaces for business intelligence assistance with access to production database queries, web search capabilities, and Airtable lead management. The project consists of three main components: chat interface, Slack bot, and serverless functions.
 
 ## Project Structure
 
 ```
 dash/
-├── chat/                      # SvelteKit chat interface
-│   ├── backend/              # FastAPI backend for chat
+├── chat/                      # SvelteKit chat interface + Slack bot
+│   ├── backend/              # FastAPI backend for chat + Slack
 │   ├── src/                  # Svelte frontend components
 │   │   ├── lib/
 │   │   │   ├── components/   # Svelte components
@@ -20,13 +20,6 @@ dash/
 │   ├── svelte.config.js      # SvelteKit configuration
 │   ├── vite.config.ts        # Vite build configuration
 │   └── tailwind.config.js    # Tailwind CSS configuration
-├── voice/                    # Pipecat voice assistant
-│   ├── functions/            # HTTP wrappers for DO Functions
-│   │   ├── run_sql_query.py  # SQL query HTTP wrapper
-│   │   ├── web_search.py     # Web search HTTP wrapper
-│   │   └── airtable_leads.py # Airtable leads HTTP wrapper
-│   ├── main.py              # Pipecat pipeline implementation
-│   └── pyproject.toml       # Python dependencies
 └── agent/                    # DigitalOcean Functions
     └── functions/
         ├── project.yml      # Function deployment config
@@ -54,8 +47,8 @@ dash/
 - **Marked** + **DOMPurify** - Markdown rendering with sanitization
 
 ### Backend Services
-- **FastAPI** - Modern Python web framework for chat backend
-- **Pipecat AI** - Voice conversation pipeline framework
+- **FastAPI** - Modern Python web framework for chat backend and Slack bot
+- **Slack SDK** - Slack API integration for bot functionality
 - **OpenAI SDK** - LLM integration via DigitalOcean GenAI Platform
 - **PostgreSQL** (psycopg3) - Database connectivity
 - **Uvicorn** - ASGI server
@@ -73,10 +66,10 @@ dash/
 ## Key Architecture Patterns
 
 ### 1. HTTP-Based Tool Architecture
-Tools are implemented as self-contained DigitalOcean Functions and called via HTTP by the voice assistant. This eliminates code duplication and cross-platform build issues:
+Tools are implemented as self-contained DigitalOcean Functions and called via HTTP by the chat and Slack interfaces. This eliminates code duplication and cross-platform build issues:
 
 **DigitalOcean Functions (`/agent/functions/packages/gator/*/`)**: Self-contained implementations with all business logic
-**Voice HTTP Wrappers (`/voice/functions/`)**: Lightweight HTTP clients that call DigitalOcean Functions
+**Chat/Slack Integration**: Both interfaces make HTTP calls to the same DigitalOcean Functions
 
 Example implementation pattern:
 ```python
@@ -88,16 +81,8 @@ def main(event, context):
     result = core_function(event.get('param1'), event.get('param2'))
     return {'statusCode': 200, 'body': result}
 
-# /voice/functions/tool_name.py - HTTP Wrapper  
-import requests
-from pipecat.services.llm_service import FunctionCallParams
-
-async def tool_name(params: FunctionCallParams):
-    # HTTP call to DigitalOcean Function
-    response = requests.post(f"{DO_FUNCTIONS_BASE_URL}/tool_name", 
-                           json=params.arguments, timeout=30)
-    result = response.json()
-    await params.result_callback(result.get('body', result))
+# Chat/Slack interfaces call the same DO Functions via HTTP
+# This ensures consistency across all interfaces
 ```
 
 ### 2. Reactive State Management
@@ -119,7 +104,7 @@ Chat backend streams responses as JSON lines rather than SSE:
 ```
 
 ### 4. Function Registration Pattern
-Both DigitalOcean Functions and Pipecat register the same tools with different adapters:
+Both chat and Slack interfaces use the same DigitalOcean Functions:
 - `run_sql_query` - Database queries for business intelligence
 - `web_search` - External information and current events
 - `airtable_leads` - Create qualified lead records in Airtable
@@ -148,12 +133,6 @@ uv sync             # Install dependencies
 uv run python main.py  # Start FastAPI server (http://localhost:8000)
 ```
 
-### Voice Assistant
-```bash
-cd voice
-uv sync             # Install dependencies
-uv run python main.py  # Start Pipecat pipeline
-```
 
 ### DigitalOcean Functions
 ```bash
@@ -175,14 +154,6 @@ DEBUG=true
 VITE_API_BASE_URL=http://localhost:8000
 ```
 
-### Voice Assistant (`voice/.env`)
-```env
-DEEPGRAM_API_KEY=your_deepgram_key
-CARTESIA_API_KEY=your_cartesia_key
-CARTESIA_VOICE_ID=your_voice_id
-DO_MODEL_ACCESS_KEY=your_do_model_key
-DO_FUNCTIONS_BASE_URL=https://faas-xxx.doserverless.co/api/v1/web/fn-xxx/gator
-```
 
 ### Functions (`agent/functions/.env`)
 ```env
@@ -240,18 +211,11 @@ When implementing new tools, follow the consistent architecture pattern:
    - Return proper HTTP status codes and response format
    - Include appropriate error handling
 
-2. **Pipecat Voice**: Create HTTP wrapper in `/voice/functions/tool_name.py`
-   - Use `async def tool_name(params: FunctionCallParams)` signature
-   - Make HTTP POST request to corresponding DO Function
-   - Handle timeout and error cases
-   - Call `await params.result_callback(result)` 
-   - Handle Pipecat-specific exceptions
-
-3. **Function Registration**: Update both systems to register the new tool
+2. **Function Registration**: Update both systems to register the new tool
    - Add tool definition to DO Functions agent configuration
-   - Add tool registration to Pipecat voice pipeline
+   - Ensure both chat and Slack interfaces can access the tool
 
-This pattern ensures tool parity between chat and voice agents while maintaining clean separation of concerns and eliminating shared code dependencies.
+This pattern ensures tool parity between chat and Slack interfaces while maintaining clean separation of concerns and eliminating shared code dependencies.
 
 **Example: Airtable Leads Tool**
 ```python
@@ -275,19 +239,8 @@ def create_airtable_lead(customer: str, website: str, notes: str) -> Dict[str, A
     # All business logic contained within function package
     return result
 
-# /voice/functions/airtable_leads.py - HTTP Wrapper
-import requests
-from pipecat.services.llm_service import FunctionCallParams
-
-async def airtable_leads(params: FunctionCallParams):
-    try:
-        base_url = os.environ.get('DO_FUNCTIONS_BASE_URL')
-        response = requests.post(f"{base_url}/airtable_leads", 
-                               json=params.arguments, timeout=30)
-        result = response.json()
-        await params.result_callback(result.get('body', result))
-    except Exception as e:
-        await params.result_callback({"error": str(e)})
+# Both chat and Slack interfaces use the same DO Function
+# via HTTP calls, ensuring consistent behavior across platforms
 ```
 
 ### Database Safety
@@ -298,12 +251,12 @@ async def airtable_leads(params: FunctionCallParams):
 
 ### Streaming Implementation
 - Chat uses native `fetch()` with `ReadableStream` processing
-- Voice uses Pipecat's pipeline framework
+- Slack uses event-driven responses
 - Both implementations handle backpressure and error states
 
 ### State Management
 - Chat state is managed through Svelte stores
-- Voice state is handled by Pipecat's context aggregator
+- Slack state is handled by FastAPI backend
 - All state changes are reactive and typed
 
 ## API Endpoints
@@ -313,9 +266,6 @@ async def airtable_leads(params: FunctionCallParams):
 - `GET /health` - Health check with configuration status
 - `GET /` - API documentation and endpoint listing
 
-### Voice Assistant
-- WebRTC endpoints for real-time voice communication
-- Function call interfaces for database queries and external APIs
 
 ### DigitalOcean Functions
 - `run_sql_query` - Execute database queries
@@ -330,10 +280,6 @@ async def airtable_leads(params: FunctionCallParams):
 3. **Set environment variables** in App Platform dashboard
 4. **Deploy backend** separately as Python service
 
-### Voice Assistant
-1. **Configure WebRTC transport** for real-time communication
-2. **Set up Daily.co** or similar service for audio handling
-3. **Deploy as containerized service** with persistent connections
 
 ### DigitalOcean Functions
 1. **Configure project.yml** with environment variables
@@ -364,7 +310,6 @@ async def airtable_leads(params: FunctionCallParams):
 1. **Database connection failures**: Check `DATABASE_URL` format and SSL requirements
 2. **CORS errors**: Verify frontend URL is in backend CORS allowlist
 3. **Function deployment failures**: Ensure all environment variables are set in project.yml
-4. **Voice connection issues**: Check WebRTC transport configuration and API keys
 5. **Build failures**: Run `npm run check` for TypeScript errors
 
 ### Development Tips
