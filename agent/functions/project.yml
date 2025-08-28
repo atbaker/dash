@@ -1,7 +1,7 @@
 parameters: {}
 environment: {}
 packages:
-    - name: gator
+    - name: dash
       shared: false
       environment: {}
       parameters: {}
@@ -53,16 +53,5 @@ packages:
             AIRTABLE_ACCESS_TOKEN: "${AIRTABLE_ACCESS_TOKEN}"
             AIRTABLE_BASE_ID: "${AIRTABLE_BASE_ID}"
             AIRTABLE_TABLE_ID: "${AIRTABLE_TABLE_ID}"
-          annotations: {}
-          limits: {}
-        - name: get_latest_workspaces
-          binary: false
-          main: ""
-          runtime: python:3.11
-          web: true
-          webSecure: false
-          parameters: {}
-          environment:
-            DO_FUNCTIONS_BASE_URL: "${DO_FUNCTIONS_BASE_URL}"
           annotations: {}
           limits: {}

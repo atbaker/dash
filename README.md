@@ -2,60 +2,140 @@
 
 ![DASH Platform](./dash.png)
 
-An Executive AI agent platform built on DigitalOcean's GenAI Platform. DASH provides chat and Slack bot interfaces for business intelligence assistance with access to production database queries, web search capabilities, and Airtable lead management.
+An AI agent for busy business leaders built on [DigitalOcean's Gradient™ AI Platform](https://www.digitalocean.com/products/gradient/platform).
+
+DASH provides chat and Slack bot interfaces for business intelligence assistance with built-in tools for production database queries, agentic web search, and lead management.
+
+Originally authored by [Andrew Baker](https://www.linkedin.com/in/andrewtorkbaker/) for a live demo at a DigitalOcean event in July 2025. Uses sample data adapted from [Gator](https://www.gator.works/), Andrew's SaaS business built on Slack's API.
 
 ## Features
 
-- **Chat Interface**: SvelteKit-based web chat with streaming responses
-- **Slack Bot**: Native Slack integration with event handling
+- **Chat Interface**: [SvelteKit](https://svelte.dev/docs/kit/introduction)-based web chat with streaming responses
+- **Slack Bot**: Native [Slack](https://api.slack.com/) integration with event handling
 - **SQL Query Tool**: Read-only database queries for business intelligence
-- **Web Search Tool**: Real-time web and news search via Brave Search API
-- **Airtable Leads**: Create and manage qualified customer leads
-- **HTTP-Based Architecture**: DigitalOcean Functions backend with HTTP API calls
+- **Web Search Tool**: Real-time web and news search via [Brave Search API](https://brave.com/search/api/)
+- **Airtable Leads**: Create and manage qualified customer leads in [Airtable](https://www.airtable.com/guides/scale/using-airtable-api)
+- **HTTP-Based Architecture**: [DigitalOcean Functions](https://www.digitalocean.com/products/functions) backend with HTTP API calls
 
 ## Architecture
 
 The platform uses an HTTP-based architecture where:
 - **DigitalOcean Functions** contain all business logic and tools
-- **Chat Interface** streams responses from FastAPI backend
+- **Chat Interface** streams responses from [FastAPI](https://fastapi.tiangolo.com/) backend
 - **Slack Bot** receives events and responds via Slack API
-- **Self-contained Functions** each contain their own business logic
 
 ## Prerequisites
 
 - **Node.js 18+** - For SvelteKit frontend
 - **Python 3.11+** - For FastAPI backend
 - **uv** - Fast Python package manager (`curl -LsSf https://astral.sh/uv/install.sh | sh`)
-- **doctl CLI** - DigitalOcean command line tool (for function deployment)
+- **doctl CLI** - [DigitalOcean command line tool](https://docs.digitalocean.com/reference/doctl/) (for function deployment)
 
 ## Quick Start
 
-### 1. Deploy DigitalOcean Functions
+### 1. Create your DigitalOcean Gradient™ AI agent
+
+[Create a DigitalOcean account](https://cloud.digitalocean.com/registrations/new) if you don't have one already, and then visit the "Create an agent" page: https://cloud.digitalocean.com/gen-ai/agents/new
+
+Name your agent "DASH", and then copy + paste the agent instructions from the agent subdirectory's README: [agent/README.md](./agent/README.md#agent-instructions)
+
+Select a model to power your agent. DASH has been tested most extensively with Llama 3.3 Instruct (70B).
+
+Create a new workspace for your agent, and give it a name. Then click "Create Agent".
+
+While your agent deploys, clone this repository and move on to step 2.
+
+### 2. Create a knowledgebase for your agent (optional)
+
+Gradient™ AI knowledge bases store and index private data sources, which your agent draws upon when generating responses for users. If you only want your DASH agent to retrieve additional context via tool calls, you can skip this step.
+
+To create your knowledge base, [open the "Knowledge Bases" tab in the Agent Platform section of your console](https://cloud.digitalocean.com/gen-ai/knowledge-bases) and click "Create knowledge base". Name your new knowledge base "dash-kb".
+
+Click "select data source" and choose "file upload". To use Gator's sample data (P&L statements from 2020 through 2024), upload the contents of the `agent/knowledge_base` subdirectory. Click "Add selected data source".
+
+Choose any embeddings model and click "Create Knowledge Base".
+
+While your knowledge base deploys and performs its initial index, proceed to step 3.
+
+### 3. Deploy DigitalOcean Functions
+
+DASH comes with a handful of built-in functions, which we'll connect to our DASH Agent as tools. Before we can do that, however, we need to deploy the underlying DigitalOcean Functions.
+
+The easiest way to do that is to use the DigitalOcean CLI. [Follow these instructions to download and install doctl](https://docs.digitalocean.com/reference/doctl/).
+
+Then, copy `agent/functions/.env.example` to `agent/functions/.env`. If you want to use the Brave and Airtable integrations, update your `.env` file to use your API keys. You can keep the `DATABASE_URL` environment variable set to `use-gator-sample-data` to use sample data drawn from Gator's production database.
+
+Then, run these commands to deploy DASH's built-in functions to your DigitalOcean project:
+
 ```bash
 cd agent/functions
-# Set up environment variables in project.yml
 doctl serverless deploy . --remote-build
 ```
 
-### 2. Start Chat Interface
+### 4. Wire up your knowledge base and tools to your DASH agent
+
+By now, your DASH agent, knowledge base, and functions should all be deployed. The last step before starting DASH is to connect them all together.
+
+Return to your agent in the DigitalOcean console and open the "Resources" tab.
+
+If you created a knowledge base in step 2, click "Add knowledge bases" and add it to your agent.
+
+Next, scroll down to Function Routes. For each of our four built-in functions...
+
+1. Click "Add function route"
+1. Select the function from the drop down menus (like `dash/run_sql_query`)
+1. Use that function's README in this repository to copy + paste the function's instructions, input, and output schemas. Choose any route name you like.
+1. Click "Add function" to finish adding the function as a tool to your agent
+
+After connecting your agent to your knowledge base and functions, you can test the connections by going to your agent's "Playground" tab. Try asking a question like "How many Slack teams have Gator installed?". The correct answer for our sample data set is 81.
+
+Continue on to configure and run the DASH web UI and Slack interface.
+
+### 5. Start DASH web UI
+
+Before running the DASH web UI locally, you will need to populate the FastAPI server's `.env` file with your agent's unique endpoint URL and access key.
+
+Copy `chat/backend/.env.example` to `chat/backend/.env`. You can find your agent's access endpoint URL from the "Agent Essentials" section of your agent's "Overview" tab. Click the "Manage Endpoint Access Keys" link to create a new access key to use in your `.env` file.
+
+Next, install and run the backend and frontend servers. You can either install the dependencies yourself or use DASH's docker compose configuration:
+
+**To start DASH using Docker**
+
 ```bash
-# Frontend
+cd chat
+docker compose up
+```
+
+DASH should then be running at http://localhost:5173 or a similar port.
+
+**To install DASH's dependencies without Docker**
+
+```bash
+# Install frontend dependencies
 cd chat
 npm install
+
+# Start the frontend
 npm run dev
 
 # Backend (in separate terminal)
 cd chat/backend
 uv sync
-# Copy environment variables
+
+# Copy and populate the environment variables using your Agent's endpoint and access key
 cp .env.example .env
-# Edit .env with your DigitalOcean Agent credentials
+
+# Start the backend
 uv run python main.py
 ```
 
-### 3. Optional: Setup Slack Bot
-For Slack integration, see detailed setup instructions in [chat/backend/README_SLACK.md](chat/backend/README_SLACK.md).
+DASH should then be running at http://localhost:5173 or a similar port.
 
+Congrats! You have now successfully configured DASH 🏃‍♂️
+
+### 6. Slack integration (optional)
+
+DASH can also join your team as a Slack bot. See the instructions in [chat/backend/README_SLACK.md](./chat/backend/README_SLACK.md) for more details.
 
 ## Project Structure
 
@@ -83,7 +163,6 @@ dash/
 - **web_search**: Search the web for current information and market research
 - **add_airtable_lead**: Create qualified lead records in Airtable database
 - **list_airtable_leads**: Retrieve recent leads from Airtable for pipeline review
-- **get_latest_workspaces**: Get recent workspace installations (demo-optimized)
 
 ## Environment Variables
 
@@ -96,7 +175,6 @@ BRAVE_API_KEY: "${BRAVE_API_KEY}"
 AIRTABLE_ACCESS_TOKEN: "${AIRTABLE_ACCESS_TOKEN}"
 AIRTABLE_BASE_ID: "${AIRTABLE_BASE_ID}"
 AIRTABLE_TABLE_ID: "${AIRTABLE_TABLE_ID}"
-DO_FUNCTIONS_BASE_URL: "${DO_FUNCTIONS_BASE_URL}"  # For get_latest_workspaces function
 ```
 
 ### Chat Backend (`chat/backend/.env`)

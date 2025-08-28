@@ -35,8 +35,7 @@ dash/
     │       ├── add_airtable_lead/ # Create Airtable leads
     │       │   ├── __main__.py   # Function entry point
     │       │   └── add_airtable_lead.py # Airtable logic
-    │       ├── list_airtable_leads/ # List Airtable leads
-    │       └── get_latest_workspaces/ # Get recent workspaces
+    │       └── list_airtable_leads/ # List Airtable leads
     └── knowledge_base/       # Sample data and documents
         ├── sample_pnl_2020.csv  # Sample P&L data
         ├── sample_pnl_2021.csv
@@ -118,7 +117,6 @@ Both chat and Slack interfaces use the same DigitalOcean Functions:
 - `web_search` - External information and current events
 - `add_airtable_lead` - Create qualified lead records in Airtable
 - `list_airtable_leads` - Retrieve recent leads from Airtable
-- `get_latest_workspaces` - Get recent workspace installations (demo-optimized)
 
 ### 5. Component-Based UI
 Modular Svelte components with clear separation:
@@ -177,9 +175,6 @@ BRAVE_API_KEY=your_brave_api_key
 AIRTABLE_ACCESS_TOKEN=your_airtable_token
 AIRTABLE_BASE_ID=your_airtable_base_id
 AIRTABLE_TABLE_ID=your_airtable_table_id
-
-# Function communication
-DO_FUNCTIONS_BASE_URL=https://faas-xxx.doserverless.co/api/v1/web/fn-xxx/gator
 ```
 
 ## AI Agent Capabilities
@@ -308,7 +303,6 @@ def create_airtable_lead(customer: str, website: str, notes: str) -> Dict[str, A
 - `web_search` - Search the web for information
 - `add_airtable_lead` - Create new lead records in Airtable database
 - `list_airtable_leads` - Retrieve recent leads from Airtable for pipeline review
-- `get_latest_workspaces` - Get recent workspace installations (demo-optimized)
 
 ## Deployment
 
